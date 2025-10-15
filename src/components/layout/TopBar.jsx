@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Menu, Search, ArrowLeft } from 'lucide-react';
 import SideMenu from './SideMenu';
+// --- MODIFICATION START ---
+import { useDebounce } from '../../hooks/useDebounce'; // Import our new hook
+// --- MODIFICATION END ---
 
 export default function TopBar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -9,25 +12,29 @@ export default function TopBar() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  // Check if we are currently on the search page
   const isSearchPage = location.pathname === '/app/search';
 
-  // State for the search input field
-  const [inputTerm, setInputTerm] = useState('');
+  const [inputTerm, setInputTerm] = useState(searchParams.get('q') || '');
+  
+  // --- MODIFICATION START ---
+  // Create a debounced version of the input term. It will only update
+  // 500ms after the user stops typing.
+  const debouncedTerm = useDebounce(inputTerm, 500);
 
-  // When the page loads, sync the input with the URL's query
+  // This effect will run whenever the debouncedTerm changes
+  useEffect(() => {
+    // Only perform navigation if we are on the search page and the term is not empty
+    if (isSearchPage && debouncedTerm.trim()) {
+      navigate(`/app/search?q=${debouncedTerm.trim()}`);
+    }
+  }, [debouncedTerm, isSearchPage, navigate]); // Dependencies for the effect
+  
+  // This effect syncs the input field if the URL changes (e.g., browser back button)
   useEffect(() => {
     setInputTerm(searchParams.get('q') || '');
   }, [searchParams]);
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (inputTerm.trim()) {
-      // Navigate to the search page with the query in the URL
-      navigate(`/app/search?q=${inputTerm.trim()}`);
-    }
-  };
-
+  // --- MODIFICATION END ---
+  
   // Render the search-specific top bar
   if (isSearchPage) {
     return (
@@ -35,19 +42,19 @@ export default function TopBar() {
         <button onClick={() => navigate(-1)} className="text-white">
           <ArrowLeft size={24} />
         </button>
-        <form onSubmit={handleSearchSubmit} className="flex-1">
-          <div className="relative">
-            <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-light-gray" />
-            <input
-              type="text"
-              value={inputTerm}
-              onChange={(e) => setInputTerm(e.target.value)}
-              placeholder="Search accounts and churches..."
-              className="w-full bg-dark-card text-white rounded-lg pl-10 pr-4 py-2 outline-none placeholder-light-gray"
-              autoFocus // Automatically focus the input on this page
-            />
-          </div>
-        </form>
+        {/* --- MODIFICATION START: Removed the form wrapper --- */}
+        <div className="relative flex-1">
+          <Search size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-light-gray" />
+          <input
+            type="text"
+            value={inputTerm}
+            onChange={(e) => setInputTerm(e.target.value)}
+            placeholder="Search accounts and churches..."
+            className="w-full bg-dark-card text-white rounded-lg pl-10 pr-4 py-2 outline-none placeholder-light-gray"
+            autoFocus
+          />
+        </div>
+        {/* --- MODIFICATION END --- */}
       </header>
     );
   }
