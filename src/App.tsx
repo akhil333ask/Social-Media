@@ -1,11 +1,8 @@
 // src/App.tsx
 
-// --- MODIFICATION START ---
-// We import AuthProvider to use it here
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { OnboardingProvider } from './context/OnboardingContext';
 import { AuthProvider, useAuth } from './context/AuthContext'; 
-// --- MODIFICATION END ---
 import Welcome from './components/onboarding/Welcome';
 import SignUp from './components/onboarding/SignUp';
 import Login from './components/onboarding/Login';
@@ -21,26 +18,25 @@ import ProfileScreen from './components/screens/ProfileScreen';
 import BibleScreen from './components/screens/BibleScreen';
 import InviteScreen from './components/screens/InviteScreen';
 import GlobalChannelScreen from './components/screens/GlobalChannelScreen';
+// --- MODIFICATION START ---
+import SearchScreen from './components/screens/SearchScreen'; // Import the new screen
+// --- MODIFICATION END ---
 
 
-// Gatekeeper components do not need to be changed. They were correct.
 const ProtectedRoute = () => {
   const { session, isLoading } = useAuth();
   if (isLoading) return <div>Loading...</div>;
   return session ? <MainLayout /> : <Navigate to="/login" replace />;
 };
 
-const PublicRoute = ({ children }: { children: React.ReactElement }) => {
+const PublicRoute = ({ children }) => {
   const { session, isLoading } = useAuth();
   if (isLoading) return <div>Loading...</div>;
   return session ? <Navigate to="/app/chats" replace /> : children;
 };
 
-
 function App() {
   return (
-    // --- MODIFICATION START ---
-    // This is the correct hierarchy: Auth -> Onboarding -> Router
     <AuthProvider>
       <OnboardingProvider>
         <BrowserRouter>
@@ -62,12 +58,14 @@ function App() {
               <Route path="bible" element={<BibleScreen />} />
               <Route path="invite" element={<InviteScreen />} />
               <Route path="global-channel" element={<GlobalChannelScreen />} />
+              {/* --- MODIFICATION START --- */}
+              <Route path="search" element={<SearchScreen />} /> {/* Add the search route */}
+              {/* --- MODIFICATION END --- */}
             </Route>
           </Routes>
         </BrowserRouter>
       </OnboardingProvider>
     </AuthProvider>
-    // --- MODIFICATION END ---
   );
 }
 
