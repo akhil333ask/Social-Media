@@ -1,6 +1,29 @@
-import { Bell, Sparkles } from 'lucide-react';
+// --- MODIFICATION START ---
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/supabase';
+import { Bell, Sparkles, LogOut } from 'lucide-react'; // Added LogOut icon
+// --- MODIFICATION END ---
 
 export default function ProfileScreen() {
+  // --- MODIFICATION START ---
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    // Show a confirmation dialog before logging out
+    if (window.confirm('Are you sure you want to log out?')) {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error logging out:', error.message);
+        alert('Failed to log out. Please try again.');
+      } else {
+        // Redirect to login page after successful logout
+        navigate('/login');
+      }
+    }
+  };
+  // --- MODIFICATION END ---
+
+
   const posts = [
     'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=300',
     'https://images.pexels.com/photos/208377/pexels-photo-208377.jpeg?auto=compress&cs=tinysrgb&w=300',
@@ -65,6 +88,20 @@ export default function ProfileScreen() {
             + Invite Friends
           </button>
         </div>
+
+        {/* --- MODIFICATION START --- */}
+        {/* Added the Logout button */}
+        <div className="mt-4">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 bg-red-900/20 border-2 border-red-900/50 text-red-400 font-semibold py-3 rounded-xl transition-colors hover:bg-red-900/40 hover:text-red-300"
+          >
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
+        </div>
+        {/* --- MODIFICATION END --- */}
+
       </div>
 
       <div className="grid grid-cols-3 gap-1 px-4 pb-4">

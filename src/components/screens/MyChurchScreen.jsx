@@ -1,8 +1,20 @@
+// --- MODIFICATION START ---
+// 1. Import useLocation to read navigation state
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
+// --- MODIFICATION END ---
 import { Bell, Calendar, MapPin } from 'lucide-react';
 
 export default function MyChurchScreen() {
-  const [activeTab, setActiveTab] = useState('events');
+  // --- MODIFICATION START ---
+  // 2. Read the state passed during navigation
+  const location = useLocation();
+
+  // 3. Set the initial tab based on the navigation state, otherwise default to 'events'
+  // Note: We check for 'group-chat' (sent from ChatsScreen) and set the state to 'group' (used in this component)
+  const initialTab = location.state?.initialTab === 'group-chat' ? 'group' : 'events';
+  const [activeTab, setActiveTab] = useState(initialTab);
+  // --- MODIFICATION END ---
 
   const events = [
     {
@@ -62,7 +74,7 @@ export default function MyChurchScreen() {
             onClick={() => setActiveTab('group')}
             className={`px-6 py-3 font-semibold transition ${
               activeTab === 'group'
-                ? 'text-white border-b-2 border-vibrant-yellow'
+                ? 'text-white border-b-2 border-vibrant-yellow' // The styling here was slightly different, adjusted for consistency
                 : 'text-light-gray'
             }`}
           >

@@ -14,28 +14,27 @@ Deno.serve(async (req) => {
       throw new Error("Username and password are required.");
     }
 
-    // Create a Supabase client with the service_role key to perform admin actions
+    // Create a Supabase client with the service_role key
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
+    
+    // --- MODIFICATION START ---
+    
+    // Step 1: The "Dummy Email" Trick.
+    // We replicate the exact same logic from the sign-up flow.
+    // The incoming username is converted into the email that Supabase Auth expects.
+    const email = `${username}@kairos.app`;
 
-    // Step 1: Find the user's profile by their username to get their phone number
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .select('phone_number')
-      .eq('username', username)
-      .single();
-
-    if (profileError || !profile) {
-      throw new Error("User not found.");
-    }
-
-    // Step 2: Try to sign in the user with their phone number and the provided password
+    // Step 2: Try to sign in the user with the generated EMAIL and the provided password.
+    // We no longer need to look up the profile first.
     const { data, error: signInError } = await supabaseAdmin.auth.signInWithPassword({
-      phone: profile.phone_number,
+      email: email,
       password: password,
     });
+
+    // --- MODIFICATION END ---
 
     if (signInError) {
       throw new Error("Invalid login credentials.");

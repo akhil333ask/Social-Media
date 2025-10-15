@@ -1,6 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/supabase.js';
+// --- MODIFICATION START ---
+// Import the Link component for navigation
+import { useNavigate, Link } from 'react-router-dom';
+// --- MODIFICATION END ---
+import { supabase } from '@/supabase';
 import { Lock, User } from 'lucide-react';
 
 export default function Login() {
@@ -18,30 +21,22 @@ export default function Login() {
     }
     setLoading(true);
 
-    // Invoke the Supabase Edge Function we created
     const { data, error: funcError } = await supabase.functions.invoke('login-with-username', {
       body: { username, password },
     });
 
-    // --- START MODIFICATION ---
-    // First, check if the function call itself returned an error (e.g., a status 400)
     if (funcError) {
-      // The actual error message from our function is nested inside the 'context'
-      // We need to parse the JSON response to display it correctly.
       const errorBody = await funcError.context.json();
       setError(errorBody.error || "An unknown error occurred.");
     } else if (data) {
-      // If the function was successful, it returns session data. Let's set it.
       const { error: sessionError } = await supabase.auth.setSession(data.session);
       
       if (sessionError) {
         setError(sessionError.message);
       } else {
-        // Navigate to the main app on successful login
         navigate('/app/chats');
       }
     }
-    // --- END MODIFICATION ---
     
     setLoading(false);
   };
@@ -82,13 +77,25 @@ export default function Login() {
           {error && <p className="text-red-500 text-sm text-center mt-4">{error}</p>}
         </div>
       </div>
+      
       <button
         onClick={handleLogin}
         disabled={loading}
-        className="w-full bg-vibrant-yellow text-black font-semibold py-4 rounded-xl text-lg mt-8"
+        className="w-full bg-vibrant-yellow text-black font-semibold py-4 rounded-xl text-lg"
       >
         {loading ? 'Logging in...' : 'Login'}
       </button>
+
+      {/* --- MODIFICATION START --- */}
+      {/* Added the link to the Sign Up page */}
+      <p className="text-light-gray text-center mt-6">
+        Don't have an account?{' '}
+        <Link to="/signup" className="font-semibold text-vibrant-yellow hover:underline">
+          Sign Up
+        </Link>
+      </p>
+      {/* --- MODIFICATION END --- */}
+
     </div>
   );
 }

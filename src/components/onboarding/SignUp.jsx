@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/supabase.js';
+import { supabase } from '@/supabase';
 import { useOnboarding } from '../../context/OnboardingContext'; // <-- ADDED
 
 // (Country data and getFlagEmoji function remain the same)
